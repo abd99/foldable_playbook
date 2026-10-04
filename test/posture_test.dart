@@ -24,6 +24,12 @@ void main() {
       expect(WindowSizeClass.fromWidth(704), WindowSizeClass.medium);
       expect(WindowSizeClass.fromWidth(834.7), WindowSizeClass.medium);
     });
+
+    test('Testing that the Pixel Fold does reach expanded', () {
+      // 17 dp wider than the Ultra and on the other side of the breakpoint,
+      // so the same code shows two different layouts on two foldables.
+      expect(WindowSizeClass.fromWidth(851.7), WindowSizeClass.expanded);
+    });
   });
 
   group('Fold Info Tests', () {
@@ -51,6 +57,22 @@ void main() {
       );
 
       expect(const FoldInfo(crease).isSeparating, isFalse);
+    });
+
+    test('Testing a vertical crease with no gap', () {
+      // The Pixel Fold crease. Vertical, so it can drive a list and detail
+      // split, but there is no gap to keep content out of.
+      const crease = DisplayFeature(
+        bounds: Rect.fromLTRB(425.8, 0, 425.8, 882.9),
+        type: DisplayFeatureType.fold,
+        state: DisplayFeatureState.postureHalfOpened,
+      );
+
+      const fold = FoldInfo(crease);
+
+      expect(fold.isVertical, isTrue);
+      expect(fold.thickness, 0);
+      expect(fold.isSeparating, isTrue);
     });
 
     test('Testing the same crease separates once the device is bent', () {

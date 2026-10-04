@@ -58,6 +58,18 @@ const fold8Ultra = Foldable(
   fold: Rect.fromLTRB(0, 376, 834.7, 376),
 );
 
+/// Pixel 10 Pro Fold, inner display.
+///
+/// 851.7 dp wide, so this one clears the expanded breakpoint that both of the
+/// Samsung foldables miss. The crease runs down the middle of the window and
+/// has no thickness, which means it only separates once the device is bent.
+const pixelFoldInner = Foldable(
+  name: 'Pixel Fold inner',
+  size: Size(851.7, 882.9),
+  pixelRatio: 2.4375,
+  fold: Rect.fromLTRB(425.8, 0, 425.8, 882.9),
+);
+
 /// A book style foldable with a 24 dp gap between the halves.
 const bookHinge = Foldable(
   name: 'Book hinge',
@@ -66,7 +78,13 @@ const bookHinge = Foldable(
   fold: Rect.fromLTRB(408, 0, 432, 640),
 );
 
-const allFoldables = [fold8Inner, fold8Cover, fold8Ultra, bookHinge];
+const allFoldables = [
+  fold8Inner,
+  fold8Cover,
+  fold8Ultra,
+  pixelFoldInner,
+  bookHinge,
+];
 
 /// The camera cutout on the Fold 8 cover display.
 ///

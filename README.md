@@ -45,10 +45,12 @@ Measured on hardware, not rounded:
 | Fold 8 inner | 704 x 932.6 dp | Medium |
 | Fold 8 cover | 475.4 x 751.2 dp | Compact |
 | Fold 8 Ultra inner | 834.7 x 752 dp | Medium |
+| Pixel 10 Pro Fold inner | 851.7 x 882.9 dp | Expanded |
 
 The Ultra is 5.3 dp short of the expanded breakpoint. Code that only asks
 whether the window is expanded shows its phone layout on both of Samsung's
-foldables.
+foldables, and its tablet layout on the Pixel 17 dp further along. The Pixel
+sizes come from the emulator; the Samsung ones from the handsets.
 
 ## Tests
 
@@ -56,6 +58,10 @@ foldables.
 for a single screen, `foldableRoot` for the whole app, `testEveryFoldable` to
 repeat a test across devices, and `expectClearOfFold` to fail when a widget
 overlaps a hinge.
+
+Five devices run in every sweep. Between them they cover a horizontal fold, a
+cover screen with a cutout and no fold, a window that just misses the expanded
+breakpoint, a vertical crease with no gap, and a hinge with a real 24 dp one.
 
 Goldens live in `test/goldens`. Update them with
 `flutter test --update-goldens`, and look at the images before committing. CI

@@ -62,6 +62,27 @@ void main() {
       expectClearOfFold(tester, find.text('Detail'), bookHinge);
     });
 
+    testWidgets('Testing if the panes meet on a crease with no gap', (
+      tester,
+    ) async {
+      // There is nothing to leave empty on the Pixel Fold, so the two panes
+      // should touch along the crease instead of straddling it.
+      useSurface(tester, pixelFoldInner);
+      await tester.pumpWidget(
+        foldableApp(
+          TwoPane(
+            start: const Text('List'),
+            end: const Text('Detail'),
+          ),
+          device: pixelFoldInner,
+          halfOpened: true,
+        ),
+      );
+
+      expectClearOfFold(tester, find.text('List'), pixelFoldInner);
+      expectClearOfFold(tester, find.text('Detail'), pixelFoldInner);
+    });
+
     testWidgets('Testing if a tabletop fold is left to the other layout', (
       tester,
     ) async {
