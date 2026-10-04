@@ -1,0 +1,179 @@
+// Copyright 2026 Abdullah Deshmukh. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:foldable_playbook/main.dart';
+import 'package:foldable_playbook/models/notepad.dart';
+import 'package:provider/provider.dart';
+
+/// A device to run a widget test on.
+///
+/// The sizes are measured from the hardware, not rounded, because the rounding
+/// is where the bugs are. A Fold 8 Ultra is 834.7 dp wide, which is 5.3 dp
+/// short of the Material expanded breakpoint.
+class Foldable {
+  const Foldable({
+    required this.name,
+    required this.size,
+    required this.pixelRatio,
+    this.fold = Rect.zero,
+  });
+
+  final String name;
+  final Size size;
+  final double pixelRatio;
+
+  /// Where the fold sits, in the same logical pixels as [size]. A device
+  /// without one leaves this empty.
+  final Rect fold;
+
+  bool get hasFold => fold != Rect.zero;
+  bool get foldIsVertical => fold.height > fold.width;
+}
+
+/// Galaxy Z Fold 8, inner display. 704 dp wide, so Material calls it medium.
+const fold8Inner = Foldable(
+  name: 'Fold 8 inner',
+  size: Size(704, 932.6),
+  pixelRatio: 2.625,
+  fold: Rect.fromLTRB(0, 466.3, 704, 466.3),
+);
+
+/// Galaxy Z Fold 8, cover display. No fold, but there is a camera cutout.
+const fold8Cover = Foldable(
+  name: 'Fold 8 cover',
+  size: Size(475.4, 751.2),
+  pixelRatio: 2.625,
+);
+
+/// Galaxy Z Fold 8 Ultra, inner display, held in landscape.
+const fold8Ultra = Foldable(
+  name: 'Fold 8 Ultra inner',
+  size: Size(834.7, 752),
+  pixelRatio: 3,
+  fold: Rect.fromLTRB(0, 376, 834.7, 376),
+);
+
+/// A book style foldable with a 24 dp gap between the halves.
+const bookHinge = Foldable(
+  name: 'Book hinge',
+  size: Size(840, 640),
+  pixelRatio: 2,
+  fold: Rect.fromLTRB(408, 0, 432, 640),
+);
+
+const allFoldables = [fold8Inner, fold8Cover, fold8Ultra, bookHinge];
+
+/// The camera cutout on the Fold 8 cover display.
+///
+/// Useful for checking that layout code filters display features by type
+/// instead of counting them.
+const cameraCutout = DisplayFeature(
+  bounds: Rect.fromLTRB(224.4, 0, 251, 39.6),
+  type: DisplayFeatureType.cutout,
+  state: DisplayFeatureState.unknown,
+);
+
+/// Wraps [child] in the app's providers and a MediaQuery describing [device].
+///
+/// Pass [halfOpened] to report the fold as bent rather than flat, and
+/// [cutout] to add the camera.
+Widget foldableApp(
+  Widget child, {
+  required Foldable device,
+  bool halfOpened = false,
+  bool cutout = false,
+}) {
+  final features = [
+    if (device.hasFold)
+      DisplayFeature(
+        bounds: device.fold,
+        type: DisplayFeatureType.fold,
+        state: halfOpened
+            ? DisplayFeatureState.postureHalfOpened
+            : DisplayFeatureState.postureFlat,
+      ),
+    if (cutout) cameraCutout,
+  ];
+
+  return MediaQuery(
+    data: MediaQueryData(
+      size: device.size,
+      devicePixelRatio: device.pixelRatio,
+      displayFeatures: features,
+    ),
+    child: ChangeNotifierProvider<Notepad>(
+      create: (context) => Notepad(),
+      child: MaterialApp(home: Scaffold(body: child)),
+    ),
+  );
+}
+
+/// Sets the test surface to [device], so goldens come out at its shape.
+void useSurface(WidgetTester tester, Foldable device) {
+  tester.view.devicePixelRatio = device.pixelRatio;
+  tester.view.physicalSize = device.size * device.pixelRatio;
+  addTearDown(tester.view.reset);
+}
+
+/// Runs [body] once for every device in [devices].
+void testEveryFoldable(
+  String description,
+  Future<void> Function(WidgetTester tester, Foldable device) body, {
+  List<Foldable> devices = allFoldables,
+}) {
+  for (final device in devices) {
+    testWidgets('$description on the ${device.name}', (tester) async {
+      useSurface(tester, device);
+      await body(tester, device);
+    });
+  }
+}
+
+/// Fails if the widget [finder] points at overlaps the hinge.
+///
+/// This is the check that catches the real bug. Content near a hinge is fine.
+/// Content inside one is split in half by hardware.
+void expectClearOfFold(
+  WidgetTester tester,
+  Finder finder,
+  Foldable device,
+) {
+  if (!device.hasFold) return;
+
+  final rect = tester.getRect(finder);
+  final overlaps = device.foldIsVertical
+      ? rect.right > device.fold.left && rect.left < device.fold.right
+      : rect.bottom > device.fold.top && rect.top < device.fold.bottom;
+
+  expect(
+    overlaps,
+    isFalse,
+    reason: '$rect overlaps the fold at ${device.fold}',
+  );
+}
+
+/// Wraps the whole app, for tests that move between screens.
+Widget foldableRoot(Foldable device, {bool halfOpened = false}) {
+  return MediaQuery(
+    data: MediaQueryData(
+      size: device.size,
+      devicePixelRatio: device.pixelRatio,
+      displayFeatures: [
+        if (device.hasFold)
+          DisplayFeature(
+            bounds: device.fold,
+            type: DisplayFeatureType.fold,
+            state: halfOpened
+                ? DisplayFeatureState.postureHalfOpened
+                : DisplayFeatureState.postureFlat,
+          ),
+      ],
+    ),
+    child: const PlaybookApp(),
+  );
+}
