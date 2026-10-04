@@ -1,17 +1,73 @@
-# foldable_playbook
+# Foldable Playbook
 
-A new Flutter project.
+Sample app for *Beyond Breakpoints: Flutter Apps for the Foldable Era*,
+FlutterCon Berlin, 8 October 2026.
 
-## Getting Started
+It reads the fold from `MediaQuery` and lays itself out around it, so you can
+open the app on a foldable, bend the device, and watch the numbers and the
+layout change.
 
-This project is a starting point for a Flutter application.
+```sh
+flutter run
+flutter test
+```
 
-A few resources to get you started if this is your first Flutter project:
+## Screens
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+| | Screen | What it covers |
+| --- | --- | --- |
+| 01 | Posture | What `displayFeatures` reports, and what it leaves out |
+| 02 | Panes | A list and detail split that lands on the hinge |
+| 03 | Coherence | State and dialogs across a fold |
+| 04 | Duo | Why the same code reports nothing on iOS |
+| 05 | Testing | How the layouts here are tested without a device |
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Code
+
+- `lib/layout/posture.dart` reads the window. `WindowSizeClass` for the
+  Material breakpoints, `FoldInfo` for the fold itself, and `foldsOf` to keep
+  camera cutouts out of the way.
+- `lib/layout/two_pane.dart` splits at a vertical fold, or by width when there
+  is no fold to use. `TabletopPane` handles the horizontal case.
+- `lib/widgets/adaptive_nav.dart` moves between a bar, a rail and a drawer,
+  with the same body widget in each.
+
+Two things are easy to miss. `displayFeatures` holds cutouts as well as folds,
+so filter it by type. And Flutter drops `orientation` and `isSeparating` from
+Jetpack's `FoldingFeature`, so both have to be worked out from the bounds.
+
+## Sizes
+
+Measured on hardware, not rounded:
+
+| Device | Window | Size class |
+| --- | --- | --- |
+| Fold 8 inner | 704 x 932.6 dp | Medium |
+| Fold 8 cover | 475.4 x 751.2 dp | Compact |
+| Fold 8 Ultra inner | 834.7 x 752 dp | Medium |
+
+The Ultra is 5.3 dp short of the expanded breakpoint. Code that only asks
+whether the window is expanded shows its phone layout on both of Samsung's
+foldables.
+
+## Tests
+
+`test/foldables.dart` holds the device sizes and the helpers: `foldableApp`
+for a single screen, `foldableRoot` for the whole app, `testEveryFoldable` to
+repeat a test across devices, and `expectClearOfFold` to fail when a widget
+overlaps a hinge.
+
+Goldens live in `test/goldens`. Update them with
+`flutter test --update-goldens`, and look at the images before committing. CI
+runs analyze, tests and goldens on every push.
+
+## iPhone Duo
+
+`MediaQuery.displayFeatures` is only filled in on Android. On iOS it stays
+empty, so an iPhone Duo looks like a slab phone to Flutter. Screen 04 shows
+that, and points at
+[flutter#192515](https://github.com/flutter/flutter/issues/192515) and
+[#193025](https://github.com/flutter/flutter/pull/193025), which propose
+filling it from Apple's reserved regions. The
+[foldable](https://pub.dev/packages/foldable) package does it today over a
+platform channel.
