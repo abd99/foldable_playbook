@@ -22,14 +22,15 @@ jobs:
 
       - run: flutter pub get
       - run: flutter analyze
-      - run: flutter test
 
-      # Goldens render with the test font, so they match across machines. If
-      # one fails anyway, the images show why faster than the log does.
-      - name: Upload failed goldens
+      # Everything except the goldens, which are host specific. Run those
+      # locally with flutter test --tags golden and look at the images.
+      - run: flutter test --exclude-tags golden
+
+      - name: Upload failures
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: failed-goldens
+          name: test-failures
           path: test/failures
           retention-days: 14

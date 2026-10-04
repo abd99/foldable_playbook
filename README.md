@@ -64,8 +64,12 @@ cover screen with a cutout and no fold, a window that just misses the expanded
 breakpoint, a vertical crease with no gap, and a hinge with a real 24 dp one.
 
 Goldens live in `test/goldens`. Update them with
-`flutter test --update-goldens`, and look at the images before committing. CI
-runs analyze, tests and goldens on every push.
+`flutter test --update-goldens`, and look at the images before committing.
+
+They are rendered by the host machine, so the images here are the ones a Mac
+produces. They are tagged `golden`, and CI runs `flutter test --exclude-tags
+golden` rather than comparing a Linux rendering against them. Run them
+yourself with `flutter test --tags golden`.
 
 ## iPhone Duo
 
