@@ -60,17 +60,31 @@ class TwoPane extends StatelessWidget {
           return start;
         }
 
+        // Display features are reported in window coordinates, and this pane
+        // does not always start at the left edge of the window. Beside a
+        // navigation rail it starts a rail's width in, so measure that gap
+        // and take it off the fold. Forgetting this puts the divider past
+        // the hinge, which looks right in a test that fills the window and
+        // wrong on a device.
+        final inset = MediaQuery.sizeOf(context).width - width;
+
         // Only a vertical fold maps onto a list and detail split. A horizontal
         // one means the device is in tabletop, which is a different layout.
         if (fold != null && fold.isVertical) {
-          _report(TwoPaneMode.fold);
-          return Row(
-            children: [
-              SizedBox(width: fold.bounds.left, child: start),
-              SizedBox(width: fold.thickness),
-              Expanded(child: end),
-            ],
-          );
+          final splitAt = fold.bounds.left - inset;
+
+          // The fold has to actually fall inside this pane. A rail wider than
+          // the first half would otherwise push the divider off the left edge.
+          if (splitAt > 0 && splitAt + fold.thickness < width) {
+            _report(TwoPaneMode.fold);
+            return Row(
+              children: [
+                SizedBox(width: splitAt, child: start),
+                SizedBox(width: fold.thickness),
+                Expanded(child: end),
+              ],
+            );
+          }
         }
 
         _report(TwoPaneMode.flex);
@@ -115,12 +129,32 @@ class TabletopPane extends StatelessWidget {
       );
     }
 
-    return Column(
-      children: [
-        SizedBox(height: fold.bounds.top, child: top),
-        SizedBox(height: fold.thickness),
-        Expanded(child: bottom),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final height = constraints.maxHeight;
+
+        // The same correction as TwoPane, on the other axis. An app bar above
+        // this pane means its top edge is not the top of the window.
+        final inset = MediaQuery.sizeOf(context).height - height;
+        final splitAt = fold.bounds.top - inset;
+
+        if (splitAt <= 0 || splitAt + fold.thickness >= height) {
+          return Column(
+            children: [
+              Expanded(child: top),
+              Expanded(child: bottom),
+            ],
+          );
+        }
+
+        return Column(
+          children: [
+            SizedBox(height: splitAt, child: top),
+            SizedBox(height: fold.thickness),
+            Expanded(child: bottom),
+          ],
+        );
+      },
     );
   }
 }

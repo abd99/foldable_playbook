@@ -108,6 +108,29 @@ void main() {
     });
   });
 
+  group('Panes Beside Navigation Tests', () {
+    testWidgets('Testing if the split lands on the hinge next to a rail', (
+      tester,
+    ) async {
+      // The panes sit to the right of the navigation rail, so the left edge
+      // of the pane is not the left edge of the window. Display features are
+      // reported in window coordinates, and forgetting that puts the divider
+      // a rail's width past the hinge.
+      useSurface(tester, bookHinge);
+      await tester.pumpWidget(foldableRoot(bookHinge, halfOpened: true));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Panes'));
+      await tester.pumpAndSettle();
+
+      expectClearOfFold(
+        tester,
+        find.widgetWithText(ListTile, 'Crease'),
+        bookHinge,
+      );
+    });
+  });
+
   group('Panes Screen Widget Tests', () {
     testWidgets('Testing if selecting an item changes the detail pane', (
       tester,
