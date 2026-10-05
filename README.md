@@ -32,9 +32,13 @@ flutter test
 - `lib/widgets/adaptive_nav.dart` moves between a bar, a rail and a drawer,
   with the same body widget in each.
 
-Two things are easy to miss. `displayFeatures` holds cutouts as well as folds,
-so filter it by type. And Flutter drops `orientation` and `isSeparating` from
-Jetpack's `FoldingFeature`, so both have to be worked out from the bounds.
+Three things are easy to miss. `displayFeatures` holds cutouts as well as
+folds, so filter it by type. Flutter drops `orientation` and `isSeparating`
+from Jetpack's `FoldingFeature`, so both have to be worked out from the
+bounds. And the bounds are in **window** coordinates: a pane sitting beside a
+navigation rail has to subtract its own offset, or the divider lands a rail's
+width past the hinge. That one only shows up on a device, unless the test
+pumps the whole app instead of the pane on its own.
 
 ## Sizes
 
