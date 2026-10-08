@@ -41,8 +41,10 @@ class DuoScreen extends StatelessWidget {
         ),
         const Note(
           'Until Flutter bridges them, a plugin can. The foldable package '
-          'reads the platform APIs and puts the result back into '
-          'displayFeatures, so layout code written for Android keeps working.',
+          'reads the platform APIs and, if you opt in with bridgeMode, puts '
+          'the result back into displayFeatures, so layout code written for '
+          'Android keeps working. The default is none, so adding the '
+          'dependency alone changes nothing.',
         ),
         const CodeBlock(
           'FoldableProvider(\n'

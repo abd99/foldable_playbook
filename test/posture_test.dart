@@ -18,11 +18,17 @@ void main() {
       expect(WindowSizeClass.fromWidth(1200), WindowSizeClass.large);
     });
 
-    test('Testing both Samsung foldables land in medium', () {
+    test('Testing the turned Fold 8 and the Ultra land in medium', () {
       // The Ultra is 5.3 dp short of expanded. An app that only checks for an
       // expanded window shows its phone layout on both of these.
       expect(WindowSizeClass.fromWidth(704), WindowSizeClass.medium);
       expect(WindowSizeClass.fromWidth(834.7), WindowSizeClass.medium);
+    });
+
+    test('Testing the Fold 8 opened like a book reaches expanded', () {
+      // Same phone as the 704 dp window above, held the way it opens. One
+      // device, two size classes, decided by how it is held.
+      expect(WindowSizeClass.fromWidth(932.6), WindowSizeClass.expanded);
     });
 
     test('Testing that the Pixel Fold does reach expanded', () {

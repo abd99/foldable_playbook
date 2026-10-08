@@ -8,10 +8,10 @@ import 'package:flutter/widgets.dart';
 
 /// Material 3 window size classes, by width in logical pixels.
 ///
-/// Both Samsung foldables land in [medium] when unfolded: the Fold 8 inner
-/// display is 704 dp wide and the Ultra is 834.7 dp, which misses [expanded]
-/// by 5.3 dp. Apps that only check for an expanded window show their phone
-/// layout on both.
+/// The Fold 8 inner display is [expanded] when opened like a book (932.6 dp)
+/// and [medium] when turned (704 dp). The Ultra is 834.7 dp in landscape,
+/// which misses [expanded] by 5.3 dp. The size class follows the window, not
+/// the device, so the same phone can be either.
 enum WindowSizeClass {
   compact('Compact', 0, 600),
   medium('Medium', 600, 840),

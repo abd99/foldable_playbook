@@ -19,7 +19,6 @@ class PostureScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final features = MediaQuery.displayFeaturesOf(context);
-    final folds = foldsOf(context);
     final separating = separatingFoldOf(context);
     final sizeClass = WindowSizeClass.of(context);
 
@@ -29,16 +28,20 @@ class PostureScreen extends StatelessWidget {
       children: [
         Readout(
           values: {
-            'window': '${size.width.toStringAsFixed(1)} x '
+            'window':
+                '${size.width.toStringAsFixed(1)} x '
                 '${size.height.toStringAsFixed(1)} dp',
             'size class': sizeClass.label,
             'navigation': NavigationKind.forWidth(size.width).name,
-            'displayFeatures': '${features.length}',
-            'folds': '${folds.length}',
+            // Every display feature is listed underneath with its type and
+            // state, so counting them here only invited the question of what
+            // a "fold" was counting that displayFeatures was not.
             'separating': separating == null ? 'none' : _summarise(separating),
           },
         ),
         const SizedBox(height: 20),
+        Text('displayFeatures', style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
         if (features.isEmpty)
           const Note(
             'No display features. Either this window has no fold, or the '
@@ -76,9 +79,7 @@ class _FeatureTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        leading: Icon(
-          isCutout ? Icons.circle_outlined : Icons.horizontal_rule,
-        ),
+        leading: Icon(isCutout ? Icons.circle_outlined : Icons.horizontal_rule),
         title: Text('${feature.type.name}, ${feature.state.name}'),
         subtitle: Text(
           'left ${bounds.left.toStringAsFixed(0)}  '

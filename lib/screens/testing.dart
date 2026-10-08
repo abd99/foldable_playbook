@@ -34,8 +34,8 @@ class TestingScreen extends StatelessWidget {
         ),
         Note(
           'The sizes come from real hardware: the Fold 8 inner display at '
-          '704 x 932.6 dp, the Ultra at 834.7 x 752, and a book style hinge '
-          'with a 24 dp gap.',
+          '932.6 x 704 dp opened like a book and 704 x 932.6 turned, the '
+          'Ultra at 834.7 x 752, and a book style hinge with a 24 dp gap.',
         ),
         Note(
           'Golden files cover what assertions miss, like text sitting in the '

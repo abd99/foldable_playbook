@@ -35,12 +35,28 @@ class Foldable {
   bool get foldIsVertical => fold.height > fold.width;
 }
 
-/// Galaxy Z Fold 8, inner display. 704 dp wide, so Material calls it medium.
+/// Galaxy Z Fold 8, inner display, turned a quarter from how it opens.
+///
+/// 704 dp wide, so Material calls it medium, and the crease runs across the
+/// window. See [fold8Book] for the way the device opens.
 const fold8Inner = Foldable(
   name: 'Fold 8 inner',
   size: Size(704, 932.6),
   pixelRatio: 2.625,
   fold: Rect.fromLTRB(0, 466.3, 704, 466.3),
+);
+
+/// Galaxy Z Fold 8, inner display, opened like a book.
+///
+/// The orientation the device opens in: 932.6 dp wide with the crease running
+/// down the middle, so Material calls it expanded. The same phone is medium
+/// when turned (see [fold8Inner]), which is the point. Measured with
+/// posture_probe on 22 August: 2448 x 1848 px at 2.625.
+const fold8Book = Foldable(
+  name: 'Fold 8 book',
+  size: Size(932.6, 704),
+  pixelRatio: 2.625,
+  fold: Rect.fromLTRB(466.3, 0, 466.3, 704),
 );
 
 /// Galaxy Z Fold 8, cover display. No fold, but there is a camera cutout.
@@ -60,8 +76,8 @@ const fold8Ultra = Foldable(
 
 /// Pixel 10 Pro Fold, inner display.
 ///
-/// 851.7 dp wide, so this one clears the expanded breakpoint that both of the
-/// Samsung foldables miss. The crease runs down the middle of the window and
+/// 851.7 dp wide, so this one clears the expanded breakpoint that the Ultra
+/// misses. The crease runs down the middle of the window and
 /// has no thickness, which means it only separates once the device is bent.
 const pixelFoldInner = Foldable(
   name: 'Pixel Fold inner',
@@ -79,6 +95,7 @@ const bookHinge = Foldable(
 );
 
 const allFoldables = [
+  fold8Book,
   fold8Inner,
   fold8Cover,
   fold8Ultra,
@@ -152,6 +169,15 @@ void testEveryFoldable(
   }
 }
 
+/// Half a logical pixel, which is less than a crease and less than the error
+/// in a layout that lands exactly on one.
+///
+/// A fold with no thickness makes "clear of the fold" mean "ends at exactly
+/// this coordinate", and a pane that does precisely that can still come out a
+/// fraction over. A real overlap is tens of pixels, so this tolerance cannot
+/// hide one.
+const _foldTolerance = 0.5;
+
 /// Fails if the widget [finder] points at overlaps the hinge.
 ///
 /// This is the check that catches the real bug. Content near a hinge is fine.
@@ -165,8 +191,10 @@ void expectClearOfFold(
 
   final rect = tester.getRect(finder);
   final overlaps = device.foldIsVertical
-      ? rect.right > device.fold.left && rect.left < device.fold.right
-      : rect.bottom > device.fold.top && rect.top < device.fold.bottom;
+      ? rect.right > device.fold.left + _foldTolerance &&
+            rect.left < device.fold.right - _foldTolerance
+      : rect.bottom > device.fold.top + _foldTolerance &&
+            rect.top < device.fold.bottom - _foldTolerance;
 
   expect(
     overlaps,

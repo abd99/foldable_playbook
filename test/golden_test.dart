@@ -35,6 +35,43 @@ void main() {
       );
     });
 
+    testEveryFoldable('Player', (tester, device) async {
+      await tester.pumpWidget(
+        foldableApp(
+          const PanesScreen(),
+          device: device,
+          halfOpened: device.hasFold,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Player'));
+      await tester.pumpAndSettle();
+
+      await expectLater(
+        find.byType(PanesScreen),
+        matchesGoldenFile('goldens/player_${_fileName(device)}.png'),
+      );
+    });
+
+    testWidgets('Player, flat, on a wide window', (tester) async {
+      // The one case the sweep above cannot reach: wide, and no fold to use,
+      // so the controls are drawn on the picture.
+      useSurface(tester, fold8Book);
+      await tester.pumpWidget(
+        foldableApp(const PanesScreen(), device: fold8Book),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Player'));
+      await tester.pumpAndSettle();
+
+      await expectLater(
+        find.byType(PanesScreen),
+        matchesGoldenFile('goldens/player_flat_wide.png'),
+      );
+    });
+
     testEveryFoldable('Navigation', (tester, device) async {
       await tester.pumpWidget(foldableRoot(device));
       await tester.pumpAndSettle();
