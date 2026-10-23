@@ -86,6 +86,50 @@ class Readout extends StatelessWidget {
   }
 }
 
+/// A readout row whose value can be flipped, for a setting that is easiest to
+/// understand while looking at the numbers it changes.
+class ReadoutSwitch extends StatelessWidget {
+  const ReadoutSwitch({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    // The whole row flips it, not just the switch. The label is the bigger
+    // target and the one people reach for.
+    return InkWell(
+      onTap: () => onChanged(!value),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'monospace',
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// A paragraph set off from the rest of the page.
 class Note extends StatelessWidget {
   const Note(this.text, {super.key});

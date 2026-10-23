@@ -45,18 +45,12 @@ class AdaptiveNavScaffold extends StatelessWidget {
     required this.selectedIndex,
     required this.onDestinationSelected,
     required this.body,
-    this.title,
-    this.actions,
   });
 
   final List<Destination> destinations;
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
   final Widget body;
-  final Widget? title;
-
-  /// Shown at the end of the app bar in every layout.
-  final List<Widget>? actions;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +58,6 @@ class AdaptiveNavScaffold extends StatelessWidget {
 
     return switch (kind) {
       NavigationKind.bar => Scaffold(
-        appBar: AppBar(title: title, actions: actions),
         body: body,
         bottomNavigationBar: NavigationBar(
           // The Material default is 80, and on iOS the bar adds the home
@@ -87,13 +80,16 @@ class AdaptiveNavScaffold extends StatelessWidget {
         ),
       ),
       NavigationKind.rail => Scaffold(
-        appBar: AppBar(title: title, actions: actions),
         body: Row(
           children: [
             NavigationRail(
               selectedIndex: selectedIndex,
               onDestinationSelected: onDestinationSelected,
               labelType: NavigationRailLabelType.all,
+              // Centred, not at the top. A display's rounded corners are not
+              // part of any safe area, so on the iPhone Duo the first item
+              // sat in the curve of the top corner.
+              groupAlignment: 0,
               destinations: [
                 for (final destination in destinations)
                   NavigationRailDestination(
@@ -109,7 +105,6 @@ class AdaptiveNavScaffold extends StatelessWidget {
         ),
       ),
       NavigationKind.drawer => Scaffold(
-        appBar: AppBar(title: title, actions: actions),
         body: Row(
           children: [
             NavigationDrawer(
