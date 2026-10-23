@@ -1,7 +1,9 @@
 # Foldable Playbook
 
-Sample app for *Beyond Breakpoints: Flutter Apps for the Foldable Era*,
-FlutterCon Berlin, 8 October 2026.
+[![Flutter](https://github.com/abd99/foldable_playbook/actions/workflows/flutter.yml/badge.svg)](https://github.com/abd99/foldable_playbook/actions/workflows/flutter.yml)
+
+Sample app for *Beyond Breakpoints: Flutter Apps for the Foldable Era*, given
+at FlutterCon Berlin, part of next.app devCon, on 8 October 2026.
 
 It reads the fold from `MediaQuery` and lays itself out around it, so you can
 open the app on a foldable, bend the device, and watch the numbers and the
@@ -19,7 +21,7 @@ flutter test
 | 01 | Posture | What `displayFeatures` reports, and what it leaves out |
 | 02 | Panes | A list and detail split that lands on the hinge |
 | 03 | Coherence | State and dialogs across a fold |
-| 04 | Duo | Why the same code reports nothing on iOS |
+| 04 | Duo | What the hinge reports on iOS, and how it reaches `displayFeatures` |
 | 05 | Testing | How the layouts here are tested without a device |
 
 ## Code
@@ -84,12 +86,20 @@ yourself with `flutter test --tags golden`.
 
 ## iPhone Duo
 
-`MediaQuery.displayFeatures` is only filled in on Android. On iOS it stays
-empty, so an iPhone Duo looks like a slab phone to Flutter. Screen 04 shows
-that, and points at
+`MediaQuery.displayFeatures` is only filled in by the engine on Android. On
+iOS it stays empty, so an iPhone Duo looks like a slab phone to Flutter.
 [flutter#192515](https://github.com/flutter/flutter/issues/192515) and
-[#193025](https://github.com/flutter/flutter/pull/193025), which propose
-filling it from Apple's reserved regions. The
-[foldable](https://pub.dev/packages/foldable) package does it today over a
-platform channel, when you opt in with `bridgeMode` (the default publishes
-nothing).
+[#193025](https://github.com/flutter/flutter/pull/193025) propose filling it
+from Apple's reserved regions.
+
+Until then, this app uses the [foldable](https://pub.dev/packages/foldable)
+package to do it. `lib/main.dart` wraps the app in a `FoldableProvider` with
+`bridgeMode: DisplayFeatureBridgeMode.full`, which publishes the Duo's fold
+into `displayFeatures`, so the same layout code that runs on Android adapts on
+the Duo without knowing which platform it is on. The provider stands aside on
+Android, where the engine already reports the fold. Screen 04 shows what the
+package reads from the hinge.
+
+The package's default is `none`, which publishes nothing. `full` is a
+deliberate choice: it lets Flutter's `DisplayFeatureSubScreen` keep dialogs
+and sheets on one side of the fold.

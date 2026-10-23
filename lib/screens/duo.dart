@@ -6,6 +6,7 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:foldable/foldable.dart';
 import 'package:foldable_playbook/widgets/readout.dart';
 
 /// Shows what the first screen reports when the same build runs on iOS.
@@ -16,7 +17,7 @@ class DuoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final features = MediaQuery.displayFeaturesOf(context);
+    final duo = DuoMediaQuery.maybeOf(context);
 
     return PageBody(
       title: '04  iPhone Duo',
@@ -25,14 +26,20 @@ class DuoScreen extends StatelessWidget {
         Readout(
           values: {
             'platform': _platformName,
-            'displayFeatures': '${features.length}',
+            'hinge': duo?.status.name ?? 'no reading',
+            'angle': duo?.angleDegrees == null
+                ? 'not reported'
+                : '${duo!.angleDegrees!.toStringAsFixed(0)}°',
+            'reserved regions': '${duo?.regions.length ?? 0}',
+            'bridged to displayFeatures': '${duo?.displayFeatures.length ?? 0}',
           },
         ),
         const SizedBox(height: 20),
         const Note(
           'MediaQuery.displayFeatures is filled in from Jetpack WindowManager '
-          'on Android. The iOS embedder never fills it, so on an iPhone Duo '
-          'this list is empty no matter how the device is held.',
+          'on Android. The iOS embedder does not fill it, so on an iPhone Duo '
+          'this list is empty however the device is held — unless something '
+          'else puts the fold there, which is what the rows above are doing.',
         ),
         const Note(
           'Apple reports the fold as a reserved region, a division, which is '

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:foldable/foldable.dart';
 import 'package:foldable_playbook/models/notepad.dart';
 import 'package:foldable_playbook/screens/coherence.dart';
 import 'package:foldable_playbook/screens/duo.dart';
@@ -121,6 +122,16 @@ class PlaybookApp extends StatelessWidget {
         darkTheme: ThemeData(
           colorSchemeSeed: Colors.teal,
           brightness: Brightness.dark,
+        ),
+        // Every screen below reads the fold from MediaQuery, which Flutter
+        // fills in on Android and not on iOS. This puts the iPhone Duo's
+        // reserved regions into the same place, so none of that code has to
+        // know which platform it is running on. It sits inside MaterialApp
+        // because it republishes the MediaQuery the routes read, and it stands
+        // aside on Android, where the engine already provides the features.
+        builder: (context, child) => FoldableProvider(
+          bridgeMode: DisplayFeatureBridgeMode.full,
+          child: child ?? const SizedBox.shrink(),
         ),
         routerConfig: router(),
       ),
