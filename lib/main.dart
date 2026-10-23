@@ -65,21 +65,9 @@ GoRouter router() {
             child: FoldSafeArea(
               enabled: settings.safeArea,
               child: AdaptiveNavScaffold(
-                title: const Text('Foldable Playbook'),
                 destinations: destinations,
                 selectedIndex: navigationShell.currentIndex,
                 onDestinationSelected: navigationShell.goBranch,
-                actions: [
-                  IconButton(
-                    isSelected: settings.safeArea,
-                    tooltip: settings.safeArea
-                        ? 'Safe area on'
-                        : 'Safe area off',
-                    icon: const Icon(Icons.fullscreen),
-                    selectedIcon: const Icon(Icons.fit_screen),
-                    onPressed: settings.toggleSafeArea,
-                  ),
-                ],
                 body: navigationShell,
               ),
             ),

@@ -15,10 +15,7 @@ void main() {
       useSurface(tester, fold8Cover);
       await tester.pumpWidget(
         foldableApp(
-          TwoPane(
-            start: const Text('List'),
-            end: const Text('Detail'),
-          ),
+          TwoPane(start: const Text('List'), end: const Text('Detail')),
           device: fold8Cover,
         ),
       );
@@ -31,10 +28,7 @@ void main() {
       useSurface(tester, bookHinge);
       await tester.pumpWidget(
         foldableApp(
-          TwoPane(
-            start: const Text('List'),
-            end: const Text('Detail'),
-          ),
+          TwoPane(start: const Text('List'), end: const Text('Detail')),
           device: bookHinge,
           halfOpened: true,
         ),
@@ -48,10 +42,7 @@ void main() {
       useSurface(tester, bookHinge);
       await tester.pumpWidget(
         foldableApp(
-          TwoPane(
-            start: const Text('List'),
-            end: const Text('Detail'),
-          ),
+          TwoPane(start: const Text('List'), end: const Text('Detail')),
           device: bookHinge,
           halfOpened: true,
         ),
@@ -70,10 +61,7 @@ void main() {
       useSurface(tester, pixelFoldInner);
       await tester.pumpWidget(
         foldableApp(
-          TwoPane(
-            start: const Text('List'),
-            end: const Text('Detail'),
-          ),
+          TwoPane(start: const Text('List'), end: const Text('Detail')),
           device: pixelFoldInner,
           halfOpened: true,
         ),
@@ -240,8 +228,8 @@ void main() {
     testWidgets('Testing if the tabletop split slides into place', (
       tester,
     ) async {
-      // A 120 dp header stands in for the app bar, so the middle of the pane
-      // and the crease are not the same line.
+      // A 120 dp header stands in for whatever sits above the pane, so the
+      // middle of the pane and the crease are not the same line.
       Widget app({required bool bent}) => foldableApp(
         Column(
           children: const [
@@ -339,9 +327,7 @@ void main() {
       await tester.tap(find.text('Player'));
       await tester.pumpAndSettle();
 
-      final controls = tester.getRect(
-        find.byKey(const Key('player-controls')),
-      );
+      final controls = tester.getRect(find.byKey(const Key('player-controls')));
 
       expect(controls.height, greaterThan(180));
       expect(controls.bottom, lessThanOrEqualTo(fold8Book.size.height));

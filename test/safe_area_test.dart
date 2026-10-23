@@ -107,12 +107,14 @@ void main() {
       await tester.pumpWidget(foldableRoot(fold8Inner));
       await tester.pumpAndSettle();
 
-      expect(find.text('on'), findsOneWidget);
+      bool switchedOn() => tester.widget<Switch>(find.byType(Switch)).value;
 
-      await tester.tap(find.byTooltip('Safe area on'));
+      expect(switchedOn(), isTrue);
+
+      await tester.tap(find.byKey(const Key('safe-area-switch')));
       await tester.pumpAndSettle();
 
-      expect(find.text('off'), findsOneWidget);
+      expect(switchedOn(), isFalse);
     });
 
     testWidgets('Testing if toggling it keeps the same scaffold', (
@@ -128,7 +130,7 @@ void main() {
 
       final before = tester.state<ScaffoldState>(find.byType(Scaffold).first);
 
-      await tester.tap(find.byTooltip('Safe area on'));
+      await tester.tap(find.byKey(const Key('safe-area-switch')));
       await tester.pumpAndSettle();
 
       expect(

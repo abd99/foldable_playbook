@@ -35,16 +35,20 @@ class PostureScreen extends StatelessWidget {
                 '${size.height.toStringAsFixed(1)} dp',
             'size class': sizeClass.label,
             'navigation': NavigationKind.forWidth(size.width).name,
-            // With the safe area on, the window above is the safe area, and
-            // the fold below is measured from its corner, not the screen's.
-            'safe area': context.watch<LayoutSettings>().safeArea
-                ? 'on'
-                : 'off',
             // Every display feature is listed underneath with its type and
             // state, so counting them here only invited the question of what
             // a "fold" was counting that displayFeatures was not.
             'separating': separating == null ? 'none' : _summarise(separating),
           },
+        ),
+        // The one setting in the app, kept next to the numbers it changes.
+        // With it on, the window above is the safe area, and the fold below
+        // is measured from the safe area's corner rather than the screen's.
+        ReadoutSwitch(
+          key: const Key('safe-area-switch'),
+          label: 'safe area',
+          value: context.watch<LayoutSettings>().safeArea,
+          onChanged: (_) => context.read<LayoutSettings>().toggleSafeArea(),
         ),
         const SizedBox(height: 20),
         Text('displayFeatures', style: Theme.of(context).textTheme.labelLarge),

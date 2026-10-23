@@ -45,18 +45,12 @@ class AdaptiveNavScaffold extends StatelessWidget {
     required this.selectedIndex,
     required this.onDestinationSelected,
     required this.body,
-    this.title,
-    this.actions,
   });
 
   final List<Destination> destinations;
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
   final Widget body;
-  final Widget? title;
-
-  /// Shown at the end of the app bar in every layout.
-  final List<Widget>? actions;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +58,6 @@ class AdaptiveNavScaffold extends StatelessWidget {
 
     return switch (kind) {
       NavigationKind.bar => Scaffold(
-        appBar: AppBar(title: title, actions: actions),
         body: body,
         bottomNavigationBar: NavigationBar(
           // The Material default is 80, and on iOS the bar adds the home
@@ -87,7 +80,6 @@ class AdaptiveNavScaffold extends StatelessWidget {
         ),
       ),
       NavigationKind.rail => Scaffold(
-        appBar: AppBar(title: title, actions: actions),
         body: Row(
           children: [
             NavigationRail(
@@ -109,7 +101,6 @@ class AdaptiveNavScaffold extends StatelessWidget {
         ),
       ),
       NavigationKind.drawer => Scaffold(
-        appBar: AppBar(title: title, actions: actions),
         body: Row(
           children: [
             NavigationDrawer(
