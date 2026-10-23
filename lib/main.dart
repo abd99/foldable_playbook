@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:foldable/foldable.dart';
+import 'package:foldable_playbook/models/layout_settings.dart';
 import 'package:foldable_playbook/models/notepad.dart';
 import 'package:foldable_playbook/screens/coherence.dart';
 import 'package:foldable_playbook/screens/duo.dart';
@@ -11,6 +12,7 @@ import 'package:foldable_playbook/screens/panes.dart';
 import 'package:foldable_playbook/screens/posture.dart';
 import 'package:foldable_playbook/screens/testing.dart';
 import 'package:foldable_playbook/widgets/adaptive_nav.dart';
+import 'package:foldable_playbook/widgets/fold_safe_area.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -53,12 +55,34 @@ GoRouter router() {
       // or folding the device, does not throw away what is on them.
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return AdaptiveNavScaffold(
-            title: const Text('Foldable Playbook'),
-            destinations: destinations,
-            selectedIndex: navigationShell.currentIndex,
-            onDestinationSelected: navigationShell.goBranch,
-            body: navigationShell,
+          final settings = context.watch<LayoutSettings>();
+
+          // The inset strips the safe area leaves behind are painted the same
+          // colour as the app, so turning it on reads as the content moving
+          // in rather than as black bars appearing.
+          return ColoredBox(
+            color: Theme.of(context).colorScheme.surface,
+            child: FoldSafeArea(
+              enabled: settings.safeArea,
+              child: AdaptiveNavScaffold(
+                title: const Text('Foldable Playbook'),
+                destinations: destinations,
+                selectedIndex: navigationShell.currentIndex,
+                onDestinationSelected: navigationShell.goBranch,
+                actions: [
+                  IconButton(
+                    isSelected: settings.safeArea,
+                    tooltip: settings.safeArea
+                        ? 'Safe area on'
+                        : 'Safe area off',
+                    icon: const Icon(Icons.fullscreen),
+                    selectedIcon: const Icon(Icons.fit_screen),
+                    onPressed: settings.toggleSafeArea,
+                  ),
+                ],
+                body: navigationShell,
+              ),
+            ),
           );
         },
         branches: [
@@ -113,8 +137,13 @@ class PlaybookApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<Notepad>(
-      create: (context) => Notepad(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<Notepad>(create: (context) => Notepad()),
+        ChangeNotifierProvider<LayoutSettings>(
+          create: (context) => LayoutSettings(),
+        ),
+      ],
       child: MaterialApp.router(
         title: 'Foldable Playbook',
         debugShowCheckedModeBanner: false,

@@ -7,6 +7,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:foldable_playbook/main.dart';
+import 'package:foldable_playbook/models/layout_settings.dart';
 import 'package:foldable_playbook/models/notepad.dart';
 import 'package:provider/provider.dart';
 
@@ -141,8 +142,13 @@ Widget foldableApp(
       devicePixelRatio: device.pixelRatio,
       displayFeatures: features,
     ),
-    child: ChangeNotifierProvider<Notepad>(
-      create: (context) => Notepad(),
+    child: MultiProvider(
+      providers: [
+        ChangeNotifierProvider<Notepad>(create: (context) => Notepad()),
+        ChangeNotifierProvider<LayoutSettings>(
+          create: (context) => LayoutSettings(),
+        ),
+      ],
       child: MaterialApp(home: Scaffold(body: child)),
     ),
   );
@@ -182,11 +188,7 @@ const _foldTolerance = 0.5;
 ///
 /// This is the check that catches the real bug. Content near a hinge is fine.
 /// Content inside one is split in half by hardware.
-void expectClearOfFold(
-  WidgetTester tester,
-  Finder finder,
-  Foldable device,
-) {
+void expectClearOfFold(WidgetTester tester, Finder finder, Foldable device) {
   if (!device.hasFold) return;
 
   final rect = tester.getRect(finder);

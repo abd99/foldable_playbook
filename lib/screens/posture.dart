@@ -6,8 +6,10 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:foldable_playbook/layout/posture.dart';
+import 'package:foldable_playbook/models/layout_settings.dart';
 import 'package:foldable_playbook/widgets/adaptive_nav.dart';
 import 'package:foldable_playbook/widgets/readout.dart';
+import 'package:provider/provider.dart';
 
 /// Shows what this window reports about its own shape.
 class PostureScreen extends StatelessWidget {
@@ -33,6 +35,11 @@ class PostureScreen extends StatelessWidget {
                 '${size.height.toStringAsFixed(1)} dp',
             'size class': sizeClass.label,
             'navigation': NavigationKind.forWidth(size.width).name,
+            // With the safe area on, the window above is the safe area, and
+            // the fold below is measured from its corner, not the screen's.
+            'safe area': context.watch<LayoutSettings>().safeArea
+                ? 'on'
+                : 'off',
             // Every display feature is listed underneath with its type and
             // state, so counting them here only invited the question of what
             // a "fold" was counting that displayFeatures was not.

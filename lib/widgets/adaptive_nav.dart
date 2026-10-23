@@ -46,6 +46,7 @@ class AdaptiveNavScaffold extends StatelessWidget {
     required this.onDestinationSelected,
     required this.body,
     this.title,
+    this.actions,
   });
 
   final List<Destination> destinations;
@@ -54,15 +55,25 @@ class AdaptiveNavScaffold extends StatelessWidget {
   final Widget body;
   final Widget? title;
 
+  /// Shown at the end of the app bar in every layout.
+  final List<Widget>? actions;
+
   @override
   Widget build(BuildContext context) {
     final kind = NavigationKind.forWidth(MediaQuery.sizeOf(context).width);
 
     return switch (kind) {
       NavigationKind.bar => Scaffold(
-        appBar: AppBar(title: title),
+        appBar: AppBar(title: title, actions: actions),
         body: body,
         bottomNavigationBar: NavigationBar(
+          // The Material default is 80, and on iOS the bar adds the home
+          // indicator inset on top of that: 114 dp on an iPhone Duo, against
+          // 83 for an iOS tab bar. 64 is Material's flexible navigation bar
+          // height. It only fits one line of label, though, so when the user
+          // has asked for larger text the bar goes back to the default and
+          // lets a long label wrap.
+          height: MediaQuery.textScalerOf(context).scale(1) > 1 ? null : 64,
           selectedIndex: selectedIndex,
           onDestinationSelected: onDestinationSelected,
           destinations: [
@@ -76,7 +87,7 @@ class AdaptiveNavScaffold extends StatelessWidget {
         ),
       ),
       NavigationKind.rail => Scaffold(
-        appBar: AppBar(title: title),
+        appBar: AppBar(title: title, actions: actions),
         body: Row(
           children: [
             NavigationRail(
@@ -98,7 +109,7 @@ class AdaptiveNavScaffold extends StatelessWidget {
         ),
       ),
       NavigationKind.drawer => Scaffold(
-        appBar: AppBar(title: title),
+        appBar: AppBar(title: title, actions: actions),
         body: Row(
           children: [
             NavigationDrawer(
