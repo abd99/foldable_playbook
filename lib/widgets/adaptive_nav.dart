@@ -86,6 +86,10 @@ class AdaptiveNavScaffold extends StatelessWidget {
               selectedIndex: selectedIndex,
               onDestinationSelected: onDestinationSelected,
               labelType: NavigationRailLabelType.all,
+              // Centred, not at the top. A display's rounded corners are not
+              // part of any safe area, so on the iPhone Duo the first item
+              // sat in the curve of the top corner.
+              groupAlignment: 0,
               destinations: [
                 for (final destination in destinations)
                   NavigationRailDestination(
