@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:foldable_playbook/layout/posture.dart';
 
+import 'foldables.dart';
+
 /// The fold a book-shaped iPhone Duo reports: 40 dp wide, top to bottom of
 /// the 951 x 669 dp inner display in landscape.
 const _bookFold = DisplayFeature(
@@ -45,6 +47,47 @@ void main() {
 
       // The same fold in the window it belongs to.
       expect(await _separatingFoldIn(tester, const Size(951, 669)), isNotNull);
+    });
+
+    testWidgets('Testing if the rail stays below a tabletop fold', (
+      tester,
+    ) async {
+      // Centred over the whole height, the middle destination sat on the
+      // crease. In tabletop the rail belongs on the half lying flat.
+      useSurface(tester, fold8Inner);
+      await tester.pumpWidget(foldableRoot(fold8Inner, halfOpened: true));
+      await tester.pumpAndSettle();
+
+      final icons = find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.byType(Icon),
+      );
+      expect(icons, findsWidgets);
+      for (final icon in icons.evaluate()) {
+        expect(
+          tester.getRect(find.byWidget(icon.widget)).top,
+          greaterThanOrEqualTo(fold8Inner.fold.bottom),
+        );
+      }
+    });
+
+    testWidgets('Testing if the rail stays centred while the device is flat', (
+      tester,
+    ) async {
+      // Flat, the crease separates nothing, so nothing moves.
+      useSurface(tester, fold8Inner);
+      await tester.pumpWidget(foldableRoot(fold8Inner));
+      await tester.pumpAndSettle();
+
+      final icons = find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.byType(Icon),
+      );
+      final tops = [
+        for (final icon in icons.evaluate())
+          tester.getRect(find.byWidget(icon.widget)).top,
+      ];
+      expect(tops.first, lessThan(fold8Inner.fold.top));
     });
   });
 }
