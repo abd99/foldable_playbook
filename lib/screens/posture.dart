@@ -5,10 +5,12 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:foldable/foldable.dart' show DuoMediaQuery;
 import 'package:foldable_playbook/layout/posture.dart';
 import 'package:foldable_playbook/models/layout_settings.dart';
 import 'package:foldable_playbook/widgets/adaptive_nav.dart';
 import 'package:foldable_playbook/widgets/readout.dart';
+import 'package:foldable_playbook/widgets/strip_navigation.dart';
 import 'package:provider/provider.dart';
 
 /// Shows what this window reports about its own shape.
@@ -23,6 +25,8 @@ class PostureScreen extends StatelessWidget {
     final features = MediaQuery.displayFeaturesOf(context);
     final separating = separatingFoldOf(context);
     final sizeClass = WindowSizeClass.of(context);
+    final settings = context.watch<LayoutSettings>();
+    final isFoldableIPhone = DuoMediaQuery.isFoldableOf(context);
 
     return PageBody(
       title: '01  Posture',
@@ -34,7 +38,10 @@ class PostureScreen extends StatelessWidget {
                 '${size.width.toStringAsFixed(1)} x '
                 '${size.height.toStringAsFixed(1)} dp',
             'size class': sizeClass.label,
-            'navigation': NavigationKind.forWidth(size.width).name,
+            'navigation': switch (StripBody.stripOf(context)) {
+              final strip? => 'strip, ${strip.side.name}',
+              null => NavigationKind.forWidth(size.width).name,
+            },
             // Every display feature is listed underneath with its type and
             // state, so counting them here only invited the question of what
             // a "fold" was counting that displayFeatures was not.
@@ -47,9 +54,41 @@ class PostureScreen extends StatelessWidget {
         ReadoutSwitch(
           key: const Key('safe-area-switch'),
           label: 'safe area',
-          value: context.watch<LayoutSettings>().safeArea,
+          value: settings.safeArea,
           onChanged: (_) => context.read<LayoutSettings>().toggleSafeArea(),
         ),
+        ReadoutSwitch(
+          key: const Key('geometry-overlay-switch'),
+          label: 'geometry overlay',
+          value: settings.geometryOverlay,
+          onChanged: (_) =>
+              context.read<LayoutSettings>().toggleGeometryOverlay(),
+        ),
+        // Both only mean something on iPhone Duo: Android has no strip, and
+        // its engine reports the fold without a bridge.
+        if (isFoldableIPhone) ...[
+          ReadoutSwitch(
+            key: const Key('strip-navigation-switch'),
+            label: 'strip navigation',
+            value: settings.stripNavigation,
+            onChanged: (_) =>
+                context.read<LayoutSettings>().toggleStripNavigation(),
+          ),
+          const SizedBox(height: 12),
+          Text('bridge', style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          SegmentedButton<FoldBridgeChoice>(
+            key: const Key('bridge-picker'),
+            showSelectedIcon: false,
+            segments: [
+              for (final bridge in FoldBridgeChoice.values)
+                ButtonSegment(value: bridge, label: Text(bridge.label)),
+            ],
+            selected: {settings.bridge},
+            onSelectionChanged: (selection) =>
+                context.read<LayoutSettings>().selectBridge(selection.single),
+          ),
+        ],
         const SizedBox(height: 20),
         Text('displayFeatures', style: Theme.of(context).textTheme.labelLarge),
         const SizedBox(height: 8),

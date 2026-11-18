@@ -107,7 +107,15 @@ void main() {
       await tester.pumpWidget(foldableRoot(fold8Inner));
       await tester.pumpAndSettle();
 
-      bool switchedOn() => tester.widget<Switch>(find.byType(Switch)).value;
+      // Screen 01 has more than one switch, so look inside this row only.
+      bool switchedOn() => tester
+          .widget<Switch>(
+            find.descendant(
+              of: find.byKey(const Key('safe-area-switch')),
+              matching: find.byType(Switch),
+            ),
+          )
+          .value;
 
       expect(switchedOn(), isTrue);
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:duo_kit/debug.dart';
+import 'package:duo_kit/duo_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:foldable/foldable.dart';
 import 'package:foldable_playbook/models/layout_settings.dart';
@@ -12,7 +14,9 @@ import 'package:foldable_playbook/screens/panes.dart';
 import 'package:foldable_playbook/screens/posture.dart';
 import 'package:foldable_playbook/screens/testing.dart';
 import 'package:foldable_playbook/widgets/adaptive_nav.dart';
+import 'package:foldable_playbook/widgets/fold_bridge_switch.dart';
 import 'package:foldable_playbook/widgets/fold_safe_area.dart';
+import 'package:foldable_playbook/widgets/strip_navigation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -57,20 +61,49 @@ GoRouter router() {
         builder: (context, state, navigationShell) {
           final settings = context.watch<LayoutSettings>();
 
+          // A strip only exists on iPhone Duo: the inset along one side that
+          // holds the camera and the status cluster. duo_kit finds it from the
+          // padding alone, and on Android it never looks.
+          final strip = settings.stripNavigation
+              ? FoldGeometry.of(context).strip
+              : null;
+
           // The inset strips the safe area leaves behind are painted the same
           // colour as the app, so turning it on reads as the content moving
           // in rather than as black bars appearing.
           return ColoredBox(
             color: Theme.of(context).colorScheme.surface,
-            child: FoldSafeArea(
-              enabled: settings.safeArea,
-              child: AdaptiveNavScaffold(
-                destinations: destinations,
-                selectedIndex: navigationShell.currentIndex,
-                onDestinationSelected: navigationShell.goBranch,
-                body: navigationShell,
-              ),
-            ),
+            child: strip == null
+                ? FoldSafeArea(
+                    enabled: settings.safeArea,
+                    child: AdaptiveNavScaffold(
+                      destinations: destinations,
+                      selectedIndex: navigationShell.currentIndex,
+                      onDestinationSelected: navigationShell.goBranch,
+                      body: navigationShell,
+                    ),
+                  )
+                // The navigation moves into the strip, and the body gets the
+                // rest of the window. Rotating the inner display moves the
+                // strip in and out, and the screens survive the swap because
+                // go_router keeps them in keyed navigators.
+                : FoldScaffold(
+                    body: StripBody(
+                      strip: strip,
+                      child: Scaffold(
+                        body: FoldSafeArea(
+                          enabled: settings.safeArea,
+                          child: navigationShell,
+                        ),
+                      ),
+                    ),
+                    navigationBuilder: (context, placement) => StripNavigation(
+                      placement: placement,
+                      destinations: destinations,
+                      selectedIndex: navigationShell.currentIndex,
+                      onDestinationSelected: navigationShell.goBranch,
+                    ),
+                  ),
           );
         },
         branches: [
@@ -141,15 +174,30 @@ class PlaybookApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
         // Every screen below reads the fold from MediaQuery, which Flutter
-        // fills in on Android and not on iOS. This puts the iPhone Duo's
-        // reserved regions into the same place, so none of that code has to
-        // know which platform it is running on. It sits inside MaterialApp
-        // because it republishes the MediaQuery the routes read, and it stands
-        // aside on Android, where the engine already provides the features.
-        builder: (context, child) => FoldableProvider(
-          bridgeMode: DisplayFeatureBridgeMode.full,
-          child: child ?? const SizedBox.shrink(),
-        ),
+        // fills in on Android and not on iOS. Two plugins can put the iPhone
+        // Duo's fold there, and both run here so they can be compared on the
+        // device: duo_kit's FoldBridge adds its features itself, the foldable package
+        // only reports, and FoldBridgeSwitch decides which reaches the screens.
+        // They sit inside MaterialApp because they republish the MediaQuery
+        // the routes read, and on Android all three stand aside.
+        builder: (context, child) {
+          final settings = context.watch<LayoutSettings>();
+
+          return FoldBridge(
+            child: FoldableProvider(
+              bridgeMode: DisplayFeatureBridgeMode.none,
+              child: FoldBridgeSwitch(
+                bridge: settings.bridge,
+                // Over everything, because the geometry is in window
+                // coordinates.
+                child: FoldGeometryOverlay(
+                  enabled: settings.geometryOverlay,
+                  child: child ?? const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          );
+        },
         routerConfig: router(),
       ),
     );
