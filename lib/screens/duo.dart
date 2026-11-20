@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 import 'dart:io' show Platform;
+import 'dart:math' as math;
 
+import 'package:duo_kit/duo_kit.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:foldable/foldable.dart';
+import 'package:foldable_playbook/models/layout_settings.dart';
 import 'package:foldable_playbook/widgets/readout.dart';
+import 'package:provider/provider.dart';
 
 /// Shows what the first screen reports when the same build runs on iOS.
 class DuoScreen extends StatelessWidget {
@@ -18,20 +22,32 @@ class DuoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final duo = DuoMediaQuery.maybeOf(context);
+    final hinge = FoldHinge.maybeOf(context);
 
     return PageBody(
       title: '04  iPhone Duo',
       summary: 'The same call, answered differently on each platform.',
       children: [
+        // Both plugins read the same hardware, side by side, whichever one
+        // the screens are listening to.
         Readout(
           values: {
             'platform': _platformName,
-            'hinge': duo?.status.name ?? 'no reading',
-            'angle': duo?.angleDegrees == null
+            'bridge in use': context.watch<LayoutSettings>().bridge.label,
+            'in displayFeatures':
+                '${MediaQuery.displayFeaturesOf(context).length}',
+            'foldable hinge': duo?.status.name ?? 'no reading',
+            'foldable angle': duo?.angleDegrees == null
                 ? 'not reported'
-                : '${duo!.angleDegrees!.toStringAsFixed(0)}°',
+                : '${duo!.angleDegrees!.toStringAsFixed(1)}°',
             'reserved regions': '${duo?.regions.length ?? 0}',
-            'bridged to displayFeatures': '${duo?.displayFeatures.length ?? 0}',
+            'duo_kit hinge': hinge?.status.name ?? 'no reading',
+            // duo_kit passes UIKit's value straight through, in radians:
+            // flat reads as pi.
+            'duo_kit angle': hinge == null
+                ? 'not reported'
+                : '${(hinge.angle * 180 / math.pi).toStringAsFixed(1)}°',
+            'vertical bar edge': FoldGeometry.of(context).verticalBarEdge.name,
           },
         ),
         const SizedBox(height: 20),

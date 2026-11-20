@@ -67,6 +67,21 @@ class FoldInfo {
   /// under the display does not, and splitting a layout around it leaves the
   /// user with two narrow panes on a screen they are holding as one.
   bool get isSeparating => thickness > 0 || isHalfOpened;
+
+  /// Whether the fold runs from one edge of a [window] of this size to the
+  /// opposite one.
+  ///
+  /// A real fold always does. One that stops partway is left over from the
+  /// previous orientation: on iPhone Duo the plugins report the fold in its
+  /// new orientation 130 to 150 ms before Flutter resizes the window, so for
+  /// a few frames of every rotation a book's vertical fold sits in a window
+  /// that is still upright.
+  bool crosses(Size window) => isVertical
+      ? bounds.top <= _edge && bounds.bottom >= window.height - _edge
+      : bounds.left <= _edge && bounds.right >= window.width - _edge;
+
+  /// Room for rounding where a fold meets the edge of the window.
+  static const _edge = 0.5;
 }
 
 /// The folds and hinges in [context], ignoring everything else.
@@ -84,9 +99,13 @@ List<FoldInfo> foldsOf(BuildContext context) {
 }
 
 /// The first fold in [context] that layout should work around, if any.
+///
+/// It has to cross the whole window as well as separate it. See
+/// [FoldInfo.crosses].
 FoldInfo? separatingFoldOf(BuildContext context) {
+  final window = MediaQuery.sizeOf(context);
   for (final fold in foldsOf(context)) {
-    if (fold.isSeparating) return fold;
+    if (fold.isSeparating && fold.crosses(window)) return fold;
   }
   return null;
 }

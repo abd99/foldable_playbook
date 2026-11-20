@@ -33,6 +33,31 @@ enum NavigationKind {
   }
 }
 
+/// Moves a rail below the fold while the device stands in tabletop.
+///
+/// Centred over the whole height, the middle destination sat on the crease
+/// itself: on a real iPhone Duo, inside its 40 dp fold. Below it is the half
+/// lying on the table, which is the one to tap. The half standing up tips
+/// back under a finger.
+class _BelowTabletopFold extends StatelessWidget {
+  const _BelowTabletopFold({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final fold = separatingFoldOf(context);
+    final top = fold != null && !fold.isVertical ? fold.bounds.bottom : 0.0;
+
+    return AnimatedPadding(
+      padding: EdgeInsets.only(top: top),
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+      child: child,
+    );
+  }
+}
+
 /// Swaps between a bottom bar, a navigation rail and a drawer as the window
 /// changes size.
 ///
@@ -82,22 +107,24 @@ class AdaptiveNavScaffold extends StatelessWidget {
       NavigationKind.rail => Scaffold(
         body: Row(
           children: [
-            NavigationRail(
-              selectedIndex: selectedIndex,
-              onDestinationSelected: onDestinationSelected,
-              labelType: NavigationRailLabelType.all,
-              // Centred, not at the top. A display's rounded corners are not
-              // part of any safe area, so on the iPhone Duo the first item
-              // sat in the curve of the top corner.
-              groupAlignment: 0,
-              destinations: [
-                for (final destination in destinations)
-                  NavigationRailDestination(
-                    icon: Icon(destination.icon),
-                    selectedIcon: Icon(destination.selectedIcon),
-                    label: Text(destination.label),
-                  ),
-              ],
+            _BelowTabletopFold(
+              child: NavigationRail(
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onDestinationSelected,
+                labelType: NavigationRailLabelType.all,
+                // Centred, not at the top. A display's rounded corners are not
+                // part of any safe area, so on the iPhone Duo the first item
+                // sat in the curve of the top corner.
+                groupAlignment: 0,
+                destinations: [
+                  for (final destination in destinations)
+                    NavigationRailDestination(
+                      icon: Icon(destination.icon),
+                      selectedIcon: Icon(destination.selectedIcon),
+                      label: Text(destination.label),
+                    ),
+                ],
+              ),
             ),
             const VerticalDivider(width: 1),
             Expanded(child: body),

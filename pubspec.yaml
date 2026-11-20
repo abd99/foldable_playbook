@@ -40,6 +40,9 @@ dependencies:
   foldable: ^1.0.5
   go_router: ^18.0.2
   provider: ^6.1.5+1
+  # Layout for iPhone Duo's strip and fold. On iOS its FoldBridge also fills
+  # MediaQuery.displayFeatures, which screen 01 compares with foldable's.
+  duo_kit: ^0.2.0
 
 dev_dependencies:
   flutter_test:
